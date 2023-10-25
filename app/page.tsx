@@ -1,95 +1,72 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+'use client';
+import { gsap } from 'gsap';
+import styles from './page.module.scss';
+import ScrollTrigger from 'gsap/ScrollTrigger';
+
+import { useLayoutEffect, useRef, MutableRefObject } from 'react';
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+    const component = useRef() as MutableRefObject<HTMLDivElement>;
+    const slider = useRef() as MutableRefObject<HTMLDivElement>;
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+    useLayoutEffect(() => {
+        let ctx = gsap.context(() => {
+            let cols = gsap.utils.toArray('#projects__col');
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+            let pauseRatio = 0.001;
+            let tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: slider.current,
+                    pin: true,
+                    scrub: 1,
+                    snap: 1 / (cols.length - 1),
+                    end: () => '+=' + slider.current.offsetWidth,
+                },
+            });
+            tl.to(
+                cols,
+                {
+                    xPercent: -100 * (cols.length - 1),
+                    duration: 1,
+                    ease: 'none',
+                },
+                pauseRatio,
+            );
+            tl.to({}, { duration: pauseRatio });
+        }, component);
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
+        return () => {
+            ctx.revert();
+        };
+    }, []);
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+    return (
+        <main id="smooth-wrapper">
+            <div ref={component} id="smooth-content">
+                <section className={styles.about} id="about-section">
+                    <div className={styles.content}>about</div>
+                </section>
+                <section className={styles.team} id="team-section">
+                    <div className={styles.content}>team</div>
+                </section>
+                <section className={styles.projects} ref={slider}>
+                    <div className={styles.projects__col} id="projects__col">
+                        <span id="projects-section"></span>
+                        <div className={styles.content}>projects 1</div>
+                    </div>
+                    <div className={styles.projects__col} id="projects__col">
+                        <div className={styles.content}>projects 2</div>
+                    </div>
+                    <div className={styles.projects__col} id="projects__col">
+                        <div className={styles.content}>projects 3</div>
+                    </div>
+                </section>
+                <section className={styles.contact} id="contact-section">
+                    <div className={styles.content}>contact</div>
+                </section>
+            </div>
+        </main>
+    );
 }
